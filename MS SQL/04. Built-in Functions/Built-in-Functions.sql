@@ -119,7 +119,6 @@ FROM Users
 WHERE IpAddress LIKE '___.1%.%.___'
 ORDER BY Username
 
-
 --17 Show All Games with Duration & Part of the Day
 SELECT [Name] AS Game,
 		CASE
@@ -135,3 +134,34 @@ SELECT [Name] AS Game,
 		END AS Duration
 FROM Games
 ORDER BY [Name], [Duration], [Part of the Day]
+
+--18 Orders Table
+USE Orders
+
+SELECT ProductName, OrderDate,
+		DATEADD(day, 3, OrderDate) AS [Pay Due],
+		DATEADD(month, 1, OrderDate) AS [Deliver Due]
+FROM Orders
+
+--19 People Table
+USE TableRelations
+
+CREATE TABLE People(
+	Id INT PRIMARY KEY IDENTITY,
+	[Name] NVARCHAR(50) NOT NULL,
+	Birthdate DATETIME2 NOT NULL
+)
+
+INSERT INTO People([Name], Birthdate) 
+	VALUES
+('Victor', '2000-12-07 00:00:00.000'),
+('Steven', '1992-09-10 00:00:00.000'),
+('Stephen', '1910-09-19 00:00:00.000'),
+('John', '2010-01-06 00:00:00.000')
+
+SELECT [Name],
+		DATEDIFF(year, Birthdate, GETDATE()) AS [Age in Years],
+		DATEDIFF(month, Birthdate, GETDATE()) AS [Age in Months],
+		DATEDIFF(day, Birthdate, GETDATE()) AS [Age in Days],
+		DATEDIFF(minute, Birthdate, GETDATE()) AS [Age in Minutes]
+FROM PEOPLE
