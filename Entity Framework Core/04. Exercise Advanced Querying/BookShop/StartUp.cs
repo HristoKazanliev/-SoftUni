@@ -3,15 +3,16 @@
     using BookShop.Models.Enums;
     using Data;
     using Initializer;
+    using System.Diagnostics;
     using System.Globalization;
     using System.Text;
-    using static Microsoft.EntityFrameworkCore.DbLoggerCategory.Database;
 
     public class StartUp
     {
         public static void Main()
         {
             using var db = new BookShopContext();
+            Stopwatch sw = Stopwatch.StartNew();
             //DbInitializer.ResetDatabase(db);
 
             //int command = int.Parse(Console.ReadLine());
@@ -27,11 +28,14 @@
             //string result = GetBooksByAuthor(db, command);
             //int result = CountBooks(db, command);
             //string result = CountCopiesByAuthor(db);
-            string result = GetTotalProfitByCategory(db);
+            //string result = GetTotalProfitByCategory(db);
+            //string result = GetMostRecentBooks(db);
+            IncreasePrices(db);
+            sw.Stop();
+            Console.WriteLine(sw.ElapsedMilliseconds);
 
+            //Console.WriteLine(result);
 
-            Console.WriteLine(result);
-            
         }
 
         //Problem 02
@@ -234,6 +238,76 @@
             }
 
             return sb.ToString().TrimEnd();
+        }
+
+        //Problem 14
+        public static string GetMostRecentBooks(BookShopContext context)
+        {
+            StringBuilder sb = new StringBuilder();
+
+            var recentCategories = context.Categories
+                .OrderBy(c => c.Name)
+                .Select(c => new
+                {
+                    CategoryName = c.Name,
+                    MostRecentBooks = c.CategoryBooks
+                        .OrderByDescending(c => c.Book.ReleaseDate)
+                        .Take(3)
+                        .Select(cb => new 
+                        {
+                            BookTitle = cb.Book.Title,
+                            ReleaseYear = cb.Book.ReleaseDate.Value.Year
+                        })
+                        .ToArray()
+                })
+                .ToArray();
+
+            foreach (var book in recentCategories)
+            {
+                sb.AppendLine($"--{book.CategoryName}");
+
+                foreach (var item in book.MostRecentBooks)
+                {
+                    sb.AppendLine($"{item.BookTitle} ({item.ReleaseYear})");
+                }
+            }
+
+            return sb.ToString().TrimEnd();
+        }
+
+        //Problem 15
+        public static void IncreasePrices(BookShopContext context)
+        {
+            // Using SaveChanges() -> 1450ms
+            var booksBefore2010 = context.Books
+                .Where(b => b.ReleaseDate.HasValue && b.ReleaseDate.Value.Year < 2010)
+                .ToArray();
+
+            foreach (var book in booksBefore2010)
+            {
+                book.Price += 5;
+            }
+
+            //context.SaveChanges();
+
+            // Using BulkUpdate() -> 1180ms
+            context.BulkUpdate(booksBefore2010);
+
+        }
+
+        //Problem 16
+        public static int RemoveBooks(BookShopContext context)
+        {
+            var booksToRemove = context.Books
+                .Where(b => b.Copies < 4200)
+                .ToArray();
+
+            int countOfBooks = booksToRemove.Length;
+
+            context.Books.RemoveRange(booksToRemove);
+            context.SaveChanges();
+
+            return countOfBooks;
         }
     }
 }
