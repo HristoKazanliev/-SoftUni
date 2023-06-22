@@ -20,10 +20,10 @@ namespace Homies.Models
         public string Description { get; set; } = null!;
 
         [Required]
-        public DateTime Start { get; set; } 
+        public string Start { get; set; } = null!;
 
         [Required]
-        public DateTime End { get; set; } 
+        public string End { get; set; } = null!;
 
         [Required]
         [Range(1, int.MaxValue)]

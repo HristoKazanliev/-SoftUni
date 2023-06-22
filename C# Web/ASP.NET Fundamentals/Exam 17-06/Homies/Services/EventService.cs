@@ -58,8 +58,8 @@ namespace Homies.Services
             {
                 Name = model.Name,
                 Description = model.Description,
-                Start = model.Start,
-                End = model.End,
+                Start = DateTime.Parse(model.Start),
+                End = DateTime.Parse(model.End),
                 TypeId = model.TypeId,
                 OrganiserId = ownerId,
             };
@@ -110,6 +110,43 @@ namespace Homies.Services
 
                 await this.dbContext.SaveChangesAsync();
             }
+        }
+
+        public async Task<AddEventViewModel> GetEditAsync(int eventId)
+        {
+            var eventVM = await this.dbContext.Events.Where(e => e.Id == eventId).Select(e => new AddEventViewModel
+            {
+                Name = e.Name,
+                Description = e.Description,
+                Start = e.Start.ToString("u"),
+                End = e.End.ToString("u"),
+                TypeId = e.Type.Id
+            }).FirstOrDefaultAsync();
+
+            eventVM.Types = await GetEventTypesAsync();
+
+            return eventVM;
+        }
+
+        public async Task UpdateEventAsync(AddEventViewModel model)
+        {
+            var startNewIsDate = DateTime.TryParse(model.Start, out var startDate);
+            var endDateNewIsDate = DateTime.TryParse(model.End, out var endDate);
+
+            var eventForUpdate = await this.dbContext.Events.FirstOrDefaultAsync(e => e.Id == model.Id);
+
+            if (eventForUpdate == null || !startNewIsDate || !endDateNewIsDate || startDate > endDate || eventForUpdate.Start > startDate) 
+            {
+                throw new InvalidDataException("Invalid data!");
+            }
+
+            eventForUpdate.Name = model.Name;
+            eventForUpdate.Description = model.Description;
+            eventForUpdate.Start = startDate;
+            eventForUpdate.End = endDate;
+            eventForUpdate.TypeId = model.TypeId;
+
+            await this.dbContext.SaveChangesAsync();
         }
     }
 }

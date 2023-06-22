@@ -6,6 +6,8 @@ namespace Homies.Contracts
     {
         Task<IEnumerable<AllEventViewModel>> GetAllEventsAsync();
 
+        Task<TypeViewModel[]> GetEventTypesAsync();
+
         Task<AddEventViewModel> GetAddEventModelAsync();
 
         Task AddEventAsync(AddEventViewModel model, string ownerId);
@@ -15,5 +17,9 @@ namespace Homies.Contracts
         Task<AllEventViewModel[]> GetJoinedEventsAsync(string organiserId);
 
         Task LeaveEventAsync(int eventId, string userId);
+
+        Task<AddEventViewModel> GetEditAsync(int eventId);
+
+        Task UpdateEventAsync(AddEventViewModel model);
     }
 }

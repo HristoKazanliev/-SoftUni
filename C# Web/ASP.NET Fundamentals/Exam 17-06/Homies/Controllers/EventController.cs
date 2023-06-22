@@ -95,5 +95,45 @@ namespace Homies.Controllers
 
             return RedirectToAction("Joined", "Event");
         }
+
+        [HttpGet]
+        public async Task<IActionResult> Edit(string id)
+        {
+            if (int.TryParse(id, out int eventId))
+            { 
+                var model = await this.eventService.GetEditAsync(eventId);
+                model.Id = eventId;
+
+                return View(model);
+            }
+
+            return RedirectToAction("All", "Event");
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> Edit(AddEventViewModel model)
+        {
+            if (!ModelState.IsValid)
+            {
+                model.Types = await this.eventService.GetEventTypesAsync();
+
+                ModelState.AddModelError("", "Invalid data!");
+
+                return View(model);
+            }
+
+            try
+            {
+                await this.eventService.UpdateEventAsync(model);
+
+                return RedirectToAction("All", "Event");
+            }
+            catch (Exception)
+            {
+                model.Types = await this.eventService.GetEventTypesAsync();
+
+                return View(model);
+            }
+        }
     }
 }
