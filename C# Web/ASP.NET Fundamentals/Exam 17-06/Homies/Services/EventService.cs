@@ -148,5 +148,33 @@ namespace Homies.Services
 
             await this.dbContext.SaveChangesAsync();
         }
+
+        public async Task<DetailsEventViewModel> GetEventDetailsAsync(int eventId)
+        {
+            var eventDetails = await this.dbContext.Events.FirstOrDefaultAsync(e => e.Id == eventId) ?? throw new InvalidOperationException("Event does not exist!");
+
+            var organiser = await this.dbContext.Events.Include(e => e.Organiser).Where(e => e.Id == eventId).Select(o => new
+            {
+                o.Organiser.UserName
+            }).FirstAsync();
+
+            var type = await this.dbContext.Events.Include(e => e.Type).Where(e => e.Id == eventId).Select(t => new
+            {
+                t.Type.Name
+            }).FirstAsync();
+
+            var eventVM = new DetailsEventViewModel
+            {
+                Name = eventDetails.Name,
+                Description = eventDetails.Description,
+                Start = eventDetails.Start.ToString("f"),
+                End = eventDetails.End.ToString("f"),
+                Organiser = organiser.UserName,
+                CreatedOn = eventDetails.CreatedOn.ToString("f"),
+                Type = type.Name,
+            };
+
+            return eventVM;
+        }
     }
 }

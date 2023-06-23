@@ -21,5 +21,7 @@ namespace Homies.Contracts
         Task<AddEventViewModel> GetEditAsync(int eventId);
 
         Task UpdateEventAsync(AddEventViewModel model);
+
+        Task<DetailsEventViewModel> GetEventDetailsAsync(int eventId);
     }
 }

@@ -135,5 +135,20 @@ namespace Homies.Controllers
                 return View(model);
             }
         }
+
+        [HttpGet]
+        public async Task<IActionResult> Details(string id)
+        {
+            try
+            {
+                var model = await this.eventService.GetEventDetailsAsync(int.Parse(id));
+
+                return View(model);
+            }
+            catch (Exception)
+            {
+                return RedirectToAction("All", "Event");
+            }
+        }
     }
 }
